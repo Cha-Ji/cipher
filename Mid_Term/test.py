@@ -1,5 +1,5 @@
 from PIL import Image 
-from Crypto.Cipher import AES 
+from Crypto.Cipher import DES3 
 from Crypto import Random
 
 filename = "img.bmp" 
@@ -21,7 +21,7 @@ def process_image(filename):
  
     original = len(data)  
  
-    new = convert_to_RGB(aes_ecb_encrypt(key, pad(data))[:original])  
+    new = convert_to_RGB(DES3_ecb_encrypt(key, pad(data))[:original])  
      
     im2 = Image.new(im.mode, im.size) 
     im2.putdata(new) 
@@ -29,15 +29,15 @@ def process_image(filename):
     im2.save(filename_out+"."+format, format) 
  
 # CBC 
-def aes_cbc_encrypt(key, data, mode=AES.MODE_CBC): 
+def DES3_cbc_encrypt(key, data, mode=DES3.MODE_CBC): 
     IV = "A"*16  
-    aes = AES.new(key, mode, IV) 
-    new_data = aes.encrypt(data) 
+    DES3 = DES3.new(key, mode, IV) 
+    new_data = DES3.encrypt(data) 
     return new_data 
 # ECB 
-def aes_ecb_encrypt(key, data, mode=AES.MODE_ECB): 
-    aes = AES.new(key, mode) 
-    new_data = aes.encrypt(data) 
+def DES3_ecb_encrypt(key, data, mode=DES3.MODE_ECB): 
+    DES3 = DES3.new(key, mode) 
+    new_data = DES3.encrypt(data) 
     return new_data 
  
 process_image(filename) 
