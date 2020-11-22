@@ -1,7 +1,6 @@
 # RSA 알고리즘으로 암호화하여 정보를 주고 받는다.
 # 서버에 정수를 전달한다.
 # 사용자 인증이 가능하다.
-# DES 암호화를 통해 사용자 정보를 전달한다.
 from socket import *
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP

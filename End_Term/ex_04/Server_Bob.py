@@ -9,15 +9,6 @@ from Crypto.PublicKey import RSA
 from Crypto import Random
 from Crypto.Cipher import PKCS1_OAEP
 
-def encrypt_RSA(pub_key, msg):
-    encrypted = pub_key.encrypt(msg, 32)
-    encrypted_msg = encrypted[0]
-
-    # 복호화를 진행합니다.
-    decrypted_msg = key.decrypt(encrypted_msg)
-    return encrypted_msg
-
-
 # TCP 연결, 18000포트
 port_number = 18000
 s = socket(AF_INET,SOCK_STREAM)
@@ -38,8 +29,6 @@ with open('public_key.pem', "wb") as f:
 while True:
     trust = False
 
-    # with open('privkey.pem', 'rb') as f:
-    #     key = RSA.importKey(f.read())
     cipher = PKCS1_OAEP.new(key)
     # 클라이언트 연결
     clientData,addr = s.accept()
