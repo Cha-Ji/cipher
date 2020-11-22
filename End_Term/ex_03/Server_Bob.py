@@ -7,8 +7,8 @@ from Crypto.Cipher import DES
 
 def diffe_key(client_data):
     # 공개키
-    g = 221185 
-    p = 1340
+    p = 221185 
+    g = 1340
 
     # 임의의 정수 b
     b = 12

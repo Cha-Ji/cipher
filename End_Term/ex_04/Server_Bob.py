@@ -1,27 +1,22 @@
-# diffe-hellman 알고리즘을 통해 비밀키를 만들어 정보를 주고받는다.
+# RSA 알고리즘을 사용해 통신한다.
+# 공개키를 만들어 Client에게 전달한다.
+# 그 공개키로 암호화된 정보를 수신하고, 복호화시킨다.
 # Client에게 제곱값을 반환시켜준다.
 # 사용자 인증이 가능하다.
-# 대칭키 암호화 방식으로 DES 방식을 채택한다.
+
 from socket import *
-from Crypto.Cipher import DES
+from Crypto.PublicKey import RSA
+from Crypto import Random
+from Crypto.Cipher import PKCS1_OAEP
 
-def diffe_key(client_data):
-    # 공개키
-    g = 221185 
-    p = 1340
+def encrypt_RSA(pub_key, msg):
+    encrypted = pub_key.encrypt(msg, 32)
+    encrypted_msg = encrypted[0]
 
-    # 임의의 정수 b
-    b = 12
-    B = g**b % p
+    # 복호화를 진행합니다.
+    decrypted_msg = key.decrypt(encrypted_msg)
+    return encrypted_msg
 
-    # 앨리스에게 전송
-    client_data.send(B.to_bytes(8,'big'))
-
-    # 앨리스에게서 A를 전송받는다.
-    A_bytes = client_data.recv(1024)
-    A = int.from_bytes(A_bytes, 'big')
-    s = A**b % p
-    return s.to_bytes(8,'big')
 
 # TCP 연결, 18000포트
 port_number = 18000
@@ -29,24 +24,33 @@ s = socket(AF_INET,SOCK_STREAM)
 s.bind(('127.0.0.1',port_number))
 s.listen(1)
 
+# RSA 키
+random_generator = Random.new().read
+key = RSA.generate(1024, random_generator)
+
+# 공개키 
+# encrypted = (키 정보, None)
+pub_key = key.publickey()
+
+with open('public_key.pem', "wb") as f:
+    f.write(pub_key.exportKey())
 
 while True:
     trust = False
 
+    # with open('privkey.pem', 'rb') as f:
+    #     key = RSA.importKey(f.read())
+    cipher = PKCS1_OAEP.new(key)
     # 클라이언트 연결
     clientData,addr = s.accept()
     print('다음 클라이언트가 연결됩니다. ',addr)
     
-    # 대칭키 암호화
-    key = diffe_key(clientData)
-    des = DES.new(key, DES.MODE_ECB)
-
     # 암호화된 사용자 인증
     user_id = clientData.recv(1024)
     user_pw = clientData.recv(1024)
 
-    decoded_id = des.decrypt(user_id).decode().rstrip()
-    decoded_pass = des.decrypt(user_pw).decode().rstrip()
+    decoded_id = cipher.decrypt(user_id).decode().rstrip()
+    decoded_pass = cipher.decrypt(user_pw).decode().rstrip()
 
     with open('pw.txt',"r") as f:
         pw_id = f.readline().rstrip()
@@ -63,7 +67,7 @@ while True:
         data = clientData.recv(1024)
         if not data:
             break
-        decoded_data = des.decrypt(data).decode().rstrip()
+        decoded_data = cipher.decrypt(data).decode().rstrip()
         pow_number = decoded_data + "의 제곱값은 " \
                     + str(int(decoded_data)*int(decoded_data)) + "입니다."
         clientData.sendall(pow_number.encode())
